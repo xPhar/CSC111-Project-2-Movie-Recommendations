@@ -5,34 +5,20 @@ from typing import Any
 # TODO: Figure out the above :)
 
 class _Vertex:
-    """A vertex in a movie review graph, used to represent a movie or a user.
-
-    Each vertex item is either a user id or movie title.
+    """A vertex superclass, holding fields and methods shared by both movies and users
 
     Instance Attributes:
-        - item: The data stored in this vertex, representing a user or movie.
-        - kind: The type of this vertex: 'user' or 'movie'.
         - neighbours: The vertices that are adjacent to this vertex.
 
     Representation Invariants:
         - self not in self.neighbours
         - all(self in u.neighbours for u in self.neighbours)
-        - self.kind in {'user', 'movie'}
     """
-    item: Any
-    kind: str
     neighbours: set[_Vertex]
 
-    def __init__(self, item: Any, kind: str) -> None:
-        """Initialize a new vertex with the given item and kind.
-
-        This vertex is initialized with no neighbours.
-
-        Preconditions:
-            - kind in {'user', 'movie'}
+    def __init__(self) -> None:
+        """Initialize a new vertex with no neighbours.
         """
-        self.item = item
-        self.kind = kind
         self.neighbours = set()
 
     def degree(self) -> int:
@@ -40,8 +26,47 @@ class _Vertex:
         return len(self.neighbours)
 
 
-class Graph:
+class _Movie(_Vertex):
+    """A movie object, holding all information pertaining to a movie in the graph.
+
+    Instance Attributes:
+        - title: the title of the movie
+        - year: the release year of the movie
+        - genres: a set contianing the genres this movie fits into
+    """
+    title: str
+    year: int
+    genres: set[str]
+
+    def __init__(self, title: str, year: int, genres: set[str]) -> None:
+        """Initialize a new movie vertex with the given title, year, and genres.
+        """
+        super.__init__()
+
+        self.title = title
+        self.year = year
+        self.genres = genres
+
+
+class _User(_Vertex):
+    """A user object, representing a user in the dataset who has made a review
+
+    Instance Attributes:
+        - user_id: the users unique id (from the dataset)
+    """
+    user_id: int
+
+    def __init__(self, user_id: int) -> None:
+        """Initialize a new user vertex with the given id.
+        """
+        super.__init__()
+
+        self.user_id = user_id
+
+
+class Review_Graph:
     """A graph used to represent a network of movie reviews.
+
     """
     # Private Instance Attributes:
     #     - _vertices:
@@ -53,18 +78,25 @@ class Graph:
         """Initialize an empty graph (no vertices or edges)."""
         self._vertices = {}
 
-    def add_vertex(self, item: Any, kind: str) -> None:
-        """Add a vertex with the given item and kind to this graph.
+    def add_movie(self, title: str, year: int, genres: set[str]) -> None:
+        """Add a movie vertex with the given title, year, and genres to this graph.
 
         The new vertex is not adjacent to any other vertices.
-        Do nothing if the given item is already in this graph.
-
-        Preconditions:
-            - kind in {'user', 'movie'}
+        Do nothing if the given title is already in this graph.
         """
-        if item not in self._vertices:
-            self._vertices[item] = _Vertex(item, kind)
+        if title not in self._vertices:
+            self._vertices[title] = _Movie(title, year, genres)
 
+    def add_user(self, user_id: int) -> None:
+        """Add a user vertex with the given id to this graph.
+
+        The new vertex is not adjacent to any other vertices.
+        Do nothing if the given id is already in this graph.
+        """
+        if user_id not in self._vertices:
+            self._vertices[user_id] = _User(user_id)
+
+    # TODO: Update this to add review, which will involve figuring out how to hold onto review scores
     def add_edge(self, item1: Any, item2: Any) -> None:
         """Add an edge between the two vertices with the given items in this graph.
 
