@@ -8,22 +8,21 @@ class _Vertex:
     """A vertex superclass, holding fields and methods shared by both movies and users
 
     Instance Attributes:
-        - neighbours: The vertices that are adjacent to this vertex.
+        - reviews: The reviews connecting this vertex to its neighbours.
 
     Representation Invariants:
-        - self not in self.neighbours
-        - all(self in u.neighbours for u in self.neighbours)
+        - self not in {review.user, review.movie for review in self.reviews}
     """
-    neighbours: set[_Vertex]
+    reviews: set[Review]
 
     def __init__(self) -> None:
-        """Initialize a new vertex with no neighbours.
+        """Initialize a new vertex with no reviews.
         """
-        self.neighbours = set()
+        self.reviews = set()
 
     def degree(self) -> int:
         """Return the degree of this vertex."""
-        return len(self.neighbours)
+        return len(self.reviews)
 
 
 class _Movie(_Vertex):
@@ -41,7 +40,7 @@ class _Movie(_Vertex):
     def __init__(self, title: str, year: int, genres: set[str]) -> None:
         """Initialize a new movie vertex with the given title, year, and genres.
         """
-        super.__init__()
+        super().__init__()
 
         self.title = title
         self.year = year
@@ -59,9 +58,24 @@ class _User(_Vertex):
     def __init__(self, user_id: int) -> None:
         """Initialize a new user vertex with the given id.
         """
-        super.__init__()
+        super().__init__()
 
         self.user_id = user_id
+
+
+class Review:
+    """A review object, which acts as an edge in a Review Graph.
+
+    Holds a user, a movie, and a rating (0 - 5).
+    """
+    user: _User
+    movie: _Movie
+    rating: float
+
+    def __init__(self, user: _User, movie: _Movie, rating: float) -> None:
+        self.user = user
+        self.movie = movie
+        self.rating = rating
 
 
 class Review_Graph:
@@ -72,7 +86,7 @@ class Review_Graph:
     #     - _vertices:
     #         A collection of the vertices contained in this graph.
     #         Maps item to _Vertex object.
-    _vertices: dict[Any, _Vertex]
+    _vertices: dict[Any, _Movie | _User]
 
     def __init__(self) -> None:
         """Initialize an empty graph (no vertices or edges)."""
@@ -96,57 +110,55 @@ class Review_Graph:
         if user_id not in self._vertices:
             self._vertices[user_id] = _User(user_id)
 
-    # TODO: Update this to add review, which will involve figuring out how to hold onto review scores
-    def add_edge(self, item1: Any, item2: Any) -> None:
-        """Add an edge between the two vertices with the given items in this graph.
+    def add_review(self, user_id: int, movie_title: str, score: int) -> None:
+        """Add a review between the user and movie in this graph with the given score.
 
-        Raise a ValueError if item1 or item2 do not appear as vertices in this graph.
-
-        Preconditions:
-            - item1 != item2
+        Raise a ValueError if userid or title do not appear as vertices in this graph.
         """
-        if item1 in self._vertices and item2 in self._vertices:
-            v1 = self._vertices[item1]
-            v2 = self._vertices[item2]
+        if user_id in self._vertices and movie_title in self._vertices:
+            user = self._vertices[user_id]
+            movie = self._vertices[movie_title]
 
-            v1.neighbours.add(v2)
-            v2.neighbours.add(v1)
+            review = Review(user, movie, score)
+
+            user.reviews.add(review)
+            movie.reviews.add(review)
         else:
             raise ValueError
 
-    def adjacent(self, item1: Any, item2: Any) -> bool:
-        """Return whether item1 and item2 are adjacent vertices in this graph.
+    def adjacent(self, user_id: int, movie_title: str) -> bool:
+        """Return whether the user has reviewed the given movie.
 
-        Return False if item1 or item2 do not appear as vertices in this graph.
+        Return False if user_id or movie_title do not appear as vertices in this graph.
         """
-        if item1 in self._vertices and item2 in self._vertices:
-            v1 = self._vertices[item1]
-            return any(v2.item == item2 for v2 in v1.neighbours)
+        if user_id in self._vertices and movie_title in self._vertices:
+            user = self._vertices[user_id]
+            movie = self._vertices[movie_title]
+            return any(movie is review.movie for review in user.reviews)
         else:
             return False
 
-    def get_neighbours(self, item: Any) -> set:
+    def get_neighbours(self, item: int | str) -> set:
         """Return a set of the neighbours of the given item.
 
-        Note that the *items* are returned, not the _Vertex objects themselves.
-
-        Raise a ValueError if item does not appear as a vertex in this graph.
+        If this is a user, return the titles of the movies they have reviewed.
+        If this is a movie, return the user Id's of those which have reviewed it.
         """
         if item in self._vertices:
-            v = self._vertices[item]
-            return {neighbour.item for neighbour in v.neighbours}
+            vertex = self._vertices[item]
+            if type(vertex) is _Movie:
+                return {review.user.user_id for review in vertex.reviews}
+            else:
+                return {review.movie.title for review in vertex.reviews}
         else:
             raise ValueError
 
-    def get_all_vertices(self, kind: str = '') -> set:
-        """Return a set of all vertex items in this graph.
+    def DEBUG_print_movies(self) -> None:
+        for vertex in self._vertices.values():
+            if type(vertex) is _Movie:
+                print(vertex.title)
 
-        If kind != '', only return the items of the given vertex kind.
-
-        Preconditions:
-            - kind in {'', 'user', 'movie'}
-        """
-        if kind != '':
-            return {v.item for v in self._vertices.values() if v.kind == kind}
-        else:
-            return set(self._vertices.keys())
+    def DEBUG_print_users(self) -> None:
+        for vertex in self._vertices.values():
+            if type(vertex) is _User:
+                print(vertex.user_id)
