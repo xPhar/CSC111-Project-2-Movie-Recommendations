@@ -18,9 +18,7 @@ def load_movies_from_file(file_path: str, graph: Review_Graph) -> dict[int, str]
     return movie_names
 
 def load_reviews_from_file(file_path: str, graph: Review_Graph, movies: dict[int, str]) -> None:
-    # Note: nrows should be removed when trying to use the entire dataset
     dataframe = pd.read_csv(file_path,
-                            nrows=10,
                             usecols={"userId", "movieId", "rating"},
                             dtype={"userId": "int32", "movieId": "int32", "rating": "float32"})
 
@@ -36,5 +34,8 @@ if __name__ == "__main__":
 
     load_reviews_from_file("data/ml-latest-small/ratings.csv", graph, movies)
 
-    graph.DEBUG_print_movies()
-    graph.DEBUG_print_users()
+    cool_ones = graph.recommend_by_genre({"Comedy", "Romance"})
+
+    import pprint
+
+    pprint.pprint(cool_ones)

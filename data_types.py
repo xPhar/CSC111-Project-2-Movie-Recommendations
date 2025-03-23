@@ -13,16 +13,16 @@ class _Vertex:
     Representation Invariants:
         - self not in {review.user, review.movie for review in self.reviews}
     """
-    reviews: set[Review]
+    _reviews: set[Review]
 
     def __init__(self) -> None:
         """Initialize a new vertex with no reviews.
         """
-        self.reviews = set()
+        self._reviews = set()
 
     def degree(self) -> int:
         """Return the degree of this vertex."""
-        return len(self.reviews)
+        return len(self._reviews)
 
 
 class _Movie(_Vertex):
@@ -45,6 +45,30 @@ class _Movie(_Vertex):
         self.title = title
         self.year = year
         self.genres = genres
+
+    def avg_review_score(self) -> float:
+        tot_rating = 0
+        
+        for review in self._reviews:
+            tot_rating += review.rating
+
+        return tot_rating / len(self._reviews)
+
+    def bayesian_weighted_score(self, avg: float, num_confident: int) -> float:
+        """ Return the weighted score of this movie.
+
+        The weighted score will be from [0-5], calculated using the average review score,
+        but taking into account the total number of reviews.
+
+        For instance, a movie rated 5.0, but with only 1 or 2 reivews should be weighted lower
+        than a movie with 10+ reviews. 
+        """
+        num_reviews = len(self._reviews)
+
+        temp = num_reviews / (num_reviews + num_confident) * self.avg_review_score() \
+                + num_confident / (num_reviews + num_confident) * avg
+
+        return temp
 
 
 class _User(_Vertex):
@@ -121,8 +145,8 @@ class Review_Graph:
 
             review = Review(user, movie, score)
 
-            user.reviews.add(review)
-            movie.reviews.add(review)
+            user._reviews.add(review)
+            movie._reviews.add(review)
         else:
             raise ValueError
 
@@ -134,7 +158,7 @@ class Review_Graph:
         if user_id in self._vertices and movie_title in self._vertices:
             user = self._vertices[user_id]
             movie = self._vertices[movie_title]
-            return any(movie is review.movie for review in user.reviews)
+            return any(movie is review.movie for review in user._reviews)
         else:
             return False
 
@@ -147,11 +171,34 @@ class Review_Graph:
         if item in self._vertices:
             vertex = self._vertices[item]
             if type(vertex) is _Movie:
-                return {review.user.user_id for review in vertex.reviews}
+                return {review.user.user_id for review in vertex._reviews}
             else:
-                return {review.movie.title for review in vertex.reviews}
+                return {review.movie.title for review in vertex._reviews}
         else:
             raise ValueError
+        
+    def recommend_by_genre(self, genres: set[str]) -> list[str]:
+        matching_movies = self._movies_matching_genre(genres)
+
+        avg_movie_rating = self._avg_movie_rating()
+
+        # This will sort from worst match to best, so we want the movies at the end of the list
+        matching_movies.sort(key=lambda movie:_genre_recommendation_key(movie, genres, avg_movie_rating))
+
+        return [movie.title for movie in matching_movies[len(matching_movies) - 10:]]
+        
+    def _movies_matching_genre(self, genres: set[str]) -> list[_Movie]:
+        return [vertex for vertex in self._vertices.values() if type(vertex) is _Movie and any({genre in vertex.genres for genre in genres}) and len(vertex._reviews) > 0] 
+
+    def _avg_movie_rating(self) -> float:
+        num_movies = 0
+        total_score = 0
+        for vertex in self._vertices.values():
+            if type(vertex) is _Movie and len(vertex._reviews) > 0:
+                num_movies += 1
+                total_score += vertex.avg_review_score()
+        
+        return total_score / num_movies
 
     def DEBUG_print_movies(self) -> None:
         for vertex in self._vertices.values():
@@ -162,3 +209,11 @@ class Review_Graph:
         for vertex in self._vertices.values():
             if type(vertex) is _User:
                 print(vertex.user_id)
+
+def _genre_recommendation_key(movie: _Movie, genres: set[str], avg_rating: float) -> float:
+    weighted_score = movie.bayesian_weighted_score(avg_rating, 50)
+
+    num_matching_genres = len(genres.intersection(movie.genres))
+    num_genres = len(movie.genres)
+
+    return weighted_score * (0.9 + (num_matching_genres / num_genres) / 10)
