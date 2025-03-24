@@ -5,33 +5,32 @@ import tkinter as tk
 from tkinter import font as tkfont
 import random
 
-# create new folder for main so that it can be deleted
 def rest():
     global main_window
-    main_window = Tk()  # Creates main root window
+    main_window = Tk() 
 rest()
 
 
-custom_font = tkfont.Font(family="Times New Roman", size=28, weight="bold")  # allows to adjust the font size
-main_window.geometry("1000x550+240+150")  # Creates the dimensions for the window and location
-main_window.title("Welcome Page")  # Sets the title of the window
-#background_image = PhotoImage(file="skaterboy.png")  # creates background for main tab
-#background_image = background_image.subsample(1, 1)  # Resize the image using subsample
-#background_label = tk.Label(image=background_image)  # Create a label to display the background image
+custom_font = tkfont.Font(family="Times New Roman", size=28, weight="bold")  
+main_window.geometry("1000x550+240+150")  
+main_window.title("Welcome Page")  
+#background_image = PhotoImage(file="skaterboy.png") 
+#background_image = background_image.subsample(1, 1)  
+#background_label = tk.Label(image=background_image)  
 #background_label.place(relwidth=1, relheight=1)
 
 def verify_login(entered_username: str, entered_password: str) -> None:
     try:
-        with open("users.txt", "r") as file:  # opens text file in read mode
-            for line in file:  # checks each line in file
-                parts = line.strip().split()  # Split the line into parts
-                if len(parts) == 2 or len(parts) ==3:  # ensure there are exactly 2 parts (username and password) or 3 including points
+        with open("users.txt", "r") as file:  
+            for line in file: 
+                parts = line.strip().split()  
+                if len(parts) == 2 or len(parts) ==3:  
                     stored_username, stored_password = parts[0], parts[1]
                     if entered_username == stored_username and entered_password == stored_password:
-                        return True  # Return True if login is successful
-        return False  # Return False if the username or password doesn't match
+                        return True 
+        return False 
     except FileNotFoundError:
-        return False  # Return False if the file is not found
+        return False  
 
 def login() -> None:
     global login_screen
@@ -66,12 +65,12 @@ def login() -> None:
     def _back() -> None:
         login_screen.destroy()
 
-    back = Button(login_screen, text="Back", fg="black", highlightbackground="grey", width=10, height=2,command=_back)  # creates interactive login button
+    back = Button(login_screen, text="Back", fg="black", highlightbackground="grey", width=10, height=2,command=_back) 
     back.place(relx=0.08, rely=0.08, anchor="center")
 
 
 
-def login2(entered_username: str, entered_password: str) -> None:  # Function to check if the username and the password match and exist in the text file
+def login2(entered_username: str, entered_password: str) -> None:  
     if verify_login(entered_username, entered_password):
         Label(login_screen, text="Login successful!").pack()
         login_sucsess()
@@ -118,11 +117,12 @@ def register() -> None:
     lable.pack()
 
     confirm_entry = Entry(register_screen, fg="white", show='*',
-                          textvariable=confirm_var)  # Confirms password, data verfication
+                          textvariable=confirm_var) 
     confirm_entry.pack()
 
     lable = Label(register_screen, text="")
     lable.pack()
+    
     def _button():
         entered_username = username.get()
         entered_password = password_var.get()
@@ -131,23 +131,23 @@ def register() -> None:
 
     Button(register_screen, text="Register", width=20, height=2, bg="grey", command=_button).pack()
 
-    back = Button(register_screen, text="Back", fg="black", highlightbackground="grey", width=10, height=2,command=destroy_signup)  # creates interactive login button
+    back = Button(register_screen, text="Back", fg="black", highlightbackground="grey", width=10, height=2,command=destroy_signup)
     back.place(relx=0.08, rely=0.08, anchor="center")
 
 def destroy_signup() -> None:
     register_screen.destroy()
 
-def signup(username, password, confirm) -> None:
+def signup(username: str, password: str, confirm: str) -> None:
     global signup
-    with open("users.txt", "r") as file:  # Open the file in read mode to check existing usernames
-        usernames = [line.strip().split() for line in file]  # Extract existing usernames from each line
-        if username in usernames:  # Check if the entered username already exists
+    with open("users.txt", "r") as file:  
+        usernames = [line.strip().split() for line in file]  
+        if username in usernames:  
             Label(register_screen, text="Username already exists").pack()
         elif password != confirm:
             Label(register_screen, fg="white", text="The passwords do not match, try again.").pack()
         else:
-            file = open("users.txt", "a")  # opens file and says it will be added to
-            file.write(username + " " + password + "\n")  # writes the username and then password in the text file
+            file = open("users.txt", "a")  
+            file.write(username + " " + password + "\n") 
             file.close()  # closes file
             register_sucsess()
             menu()
@@ -171,13 +171,10 @@ def menu() -> None:
     Label(menu_screen, text="Math4Fun", width=30, height=5, font=custom_font).pack()
     Label(menu_screen, text="").pack()
 
-    # label = Label(menu_screen, text="Welcome to the game " + username.get(), fg="black", width=30, height=5 )
-    # label.place(relx=0.5, rely=0.1, anchor="center")
-
     gam = Button(menu_screen, text="Recomendations", fg="black", highlightbackground="grey", width=30, height=5, command=recomendation)
     gam.place(relx=0.5, rely=0.3, anchor="center")
 
-    back = Button(menu_screen, text="Log Out", fg="black", highlightbackground="grey", width=10, height=2,command=menu_destroy)  # creates interactive logout button
+    back = Button(menu_screen, text="Log Out", fg="black", highlightbackground="grey", width=10, height=2,command=menu_destroy) 
     back.place(relx=0.08, rely=0.08, anchor="center")
 
 def menu_destroy() -> None:
