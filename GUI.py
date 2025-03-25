@@ -205,7 +205,7 @@ def preferences():
 
     def _reco():
         _answer = answer.get().strip().lower()
-        recomendation(answer)
+        recomendation(_answer)
 
     submit = Button(preference_screen, text="Submit", font=custom_font, command=_reco)
     submit.place(relx=0.5, rely=0.5, anchor="center")
@@ -227,6 +227,7 @@ def recomendation(answer: str) -> None:
 
     extract = BackendInstance()
     print("All available genres:", extract.get_genres())
+    print(answer)
 
     recommended_movie = extract.get_recommendations_from_genres([answer], 5)
     print("Recommended movies:", recommended_movie)
