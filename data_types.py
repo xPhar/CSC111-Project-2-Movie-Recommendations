@@ -273,7 +273,7 @@ class Review_Graph:
 def _genre_recommendation_key(movie: _Movie, genres: set[str], avg_rating: float, confidence_interval: int) -> float:
     weighted_score = movie.bayesian_weighted_score(avg_rating, confidence_interval)
 
-    num_matching_genres = len(genres.intersection(movie.genres))
+    num_matching_genres = len(set(genres).intersection(movie.genres))
     num_genres = len(movie.genres)
 
     return weighted_score * (0.9 + (num_matching_genres / num_genres) / 10)
