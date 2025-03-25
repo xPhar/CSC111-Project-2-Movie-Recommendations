@@ -71,7 +71,7 @@ def login2(entered_username: str, entered_password: str) -> None:
 
 def verify_login(entered_username: str, entered_password: str) -> None:
     try:
-        with open(os.path.join(os.path.dirname(__file__), "user.txt"), "r") as file:
+        with open("user.txt"), "r") as file:
             for line in file:
                 parts = line.strip().split()
                 if len(parts) == 2 or len(parts) == 3:
@@ -251,7 +251,7 @@ def recomendation(answer: str) -> None:
 
     tree.pack()
 
-    back = Button(reco_screen, text="white", fg="black", highlightbackground="grey", width=10, height=2,command=reco_destroy)  # creates interactive login button
+    back = Button(reco_screen, text="Back", fg="black", highlightbackground="grey", width=10, height=2,command=reco_destroy)  # creates interactive login button
     back.place(relx=0.08, rely=0.08, anchor="center")
 
 def reco_destroy() -> None:
