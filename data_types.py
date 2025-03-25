@@ -195,6 +195,9 @@ class Review_Graph:
 
     def get_movies(self) -> list[str]:
         return [vertex.title for vertex in self._vertices if type(vertex) is _Movie]
+    
+    def get_genres(self) -> list[str]:
+        return {genre for genre in {self._vertices[movie].genres for movie in self.get_movies()}}
 
     def get_neighbours(self, item: int | str) -> set:
         """Return a set of the neighbours of the given item.
