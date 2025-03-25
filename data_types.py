@@ -70,6 +70,20 @@ class _Movie(_Vertex):
 
         return temp
 
+    def similarity_score(self, other_movie: _Movie) -> float:
+        """Return the similarity score between this movie and the other.
+        """
+        # A vertex has a similarity score of 0 to itself
+        if self is other_movie:
+            return 0
+
+        # Create a set holding the verticies' shared neighbours
+        shared_reviews = self._reviews.intersection(other_movie._reviews)
+        # Create a set holding the verticies' non-shared neighbours
+        unique_reviews = self._reviews.union(other_movie._reviews)
+        # Return the number of shared neighbours / number of unique neighbours
+        return len(shared_reviews) / len(unique_reviews)
+
 
 class _User(_Vertex):
     """A user object, representing a user in the dataset who has made a review
@@ -161,6 +175,26 @@ class Review_Graph:
             return any(movie is review.movie for review in user._reviews)
         else:
             return False
+        
+    def get_similarity_score(self, movie1: str, movie2: str) -> float:
+        """Return the similarity score between the two given movies in this graph.
+
+        Raise a ValueError if movie1 or movie2 do not appear as vertices in this graph.
+        """
+        # Check whether both items are verticies in this graph
+        if movie1 in self._vertices and movie2 in self._vertices:
+            # Get the associated verticies
+            m1 = self._vertices[movie1]
+            m2 = self._vertices[movie2]
+
+            # Return the similarity between the two verticies
+            # v2.similarity_score(v1) works identically
+            return m1.similarity_score(m2)
+        else:
+            raise ValueError
+
+    def get_movies(self) -> list[str]:
+        return [vertex.title for vertex in self._vertices if type(vertex) is _Movie]
 
     def get_neighbours(self, item: int | str) -> set:
         """Return a set of the neighbours of the given item.
@@ -176,16 +210,16 @@ class Review_Graph:
                 return {review.movie.title for review in vertex._reviews}
         else:
             raise ValueError
-        
-    def recommend_by_genre(self, genres: set[str]) -> list[str]:
+
+    def recommend_by_genre(self, genres: set[str], num_recommendations: int) -> list[str]:
         matching_movies = self._movies_matching_genre(genres)
 
         avg_movie_rating = self._avg_movie_rating()
 
         # This will sort from worst match to best, so we want the movies at the end of the list
-        matching_movies.sort(key=lambda movie:_genre_recommendation_key(movie, genres, avg_movie_rating))
+        matching_movies.sort(key=lambda movie:_genre_recommendation_key(movie, genres, avg_movie_rating, 50))
 
-        return [movie.title for movie in matching_movies[len(matching_movies) - 10:]]
+        return [movie.title for movie in matching_movies[len(matching_movies) - num_recommendations:]]
         
     def _movies_matching_genre(self, genres: set[str]) -> list[_Movie]:
         return [vertex for vertex in self._vertices.values() if type(vertex) is _Movie and any({genre in vertex.genres for genre in genres}) and len(vertex._reviews) > 0] 
@@ -200,18 +234,41 @@ class Review_Graph:
         
         return total_score / num_movies
 
-    def DEBUG_print_movies(self) -> None:
-        for vertex in self._vertices.values():
-            if type(vertex) is _Movie:
-                print(vertex.title)
+    def recommend_by_similarity(self, movies: set[str], max_recommendations: int, min_rating: float = 3.5) -> list[str]:
+        all_movies = self.get_movies()
 
-    def DEBUG_print_users(self) -> None:
-        for vertex in self._vertices.values():
-            if type(vertex) is _User:
-                print(vertex.user_id)
+        # Only look for movies with a weighted rating of at least min_rating
+        movies_to_compare = [movie for movie in all_movies
+                             if self._vertices[movie].bayesian_weighted_score(self._avg_movie_rating(), 50) > min_rating]
+        
+        similarity = self._calculate_similarities(movies, movies_to_compare)
 
-def _genre_recommendation_key(movie: _Movie, genres: set[str], avg_rating: float) -> float:
-    weighted_score = movie.bayesian_weighted_score(avg_rating, 50)
+        recommendations = [movie for movie in similarity.keys()].sort(key=lambda movie: similarity[movie])
+        
+        if len(recommendations) > max_recommendations:
+            return recommendations[len(recommendations) - max_recommendations]
+        else:
+            return recommendations
+
+    def _calculate_similarities(self, liked_movies: list[str], movies_to_compare: list[str]) -> dict[str, float]:
+        net_similarity = {}
+        
+        for liked_movie in liked_movies:
+            for movie in movies_to_compare:
+                # Calculate the similarity score
+                score = self.get_similarity_score(liked_movie, movie)
+
+                # If the score is non-zero, add its score to the corresponding dictionary entry
+                if score > 0:
+                    if movie in net_similarity:
+                        net_similarity[movie] += score
+                    else:
+                        net_similarity[movie] = score
+
+        return net_similarity
+
+def _genre_recommendation_key(movie: _Movie, genres: set[str], avg_rating: float, confidence_interval: int) -> float:
+    weighted_score = movie.bayesian_weighted_score(avg_rating, confidence_interval)
 
     num_matching_genres = len(genres.intersection(movie.genres))
     num_genres = len(movie.genres)
