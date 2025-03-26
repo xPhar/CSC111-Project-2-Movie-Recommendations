@@ -6,6 +6,24 @@ from tkinter import font as tkfont
 from api import BackendInstance
 import os
 
+# Hey, also just gonna use comments for one other thing I noticed.
+# When running the program, it at some points has like 4 or 5 different windows pop up,
+# and most of them don't seem necessary. I think the new windows should either be 
+# replacing the old ones, or just have the old ones close when a new one pops up or smthn
+
+def create_window(dataset_path: str) -> None:
+    """ dataset_path should be a directory containing "movies.csv" and "ratings.csv"
+    """
+    movies_file_path = dataset_path + "/movies.csv"
+    ratings_file_path = dataset_path + "/ratings.csv"
+
+    backend = BackendInstance(movies_file_path, ratings_file_path)
+
+    # TODO: Move the rest of this file's functionality into here
+    # Since we've defined just one backend instance for the program, it can
+    # be passed around to functions which need it.
+
+
 def rest():
     global main_window
     main_window = Tk()
@@ -71,7 +89,7 @@ def login2(entered_username: str, entered_password: str) -> None:
 
 def verify_login(entered_username: str, entered_password: str) -> None:
     try:
-        with open("user.txt"), "r") as file:
+        with open("user.txt", "r") as file:
             for line in file:
                 parts = line.strip().split()
                 if len(parts) == 2 or len(parts) == 3:
@@ -107,7 +125,7 @@ def register() -> None:
     lable = Label(register_screen, text="Username:")
     lable.pack()
 
-    username_entry = Entry(register_screen, fg="white",textvariable=username)  # Creates username box to enter username
+    username_entry = Entry(register_screen, fg="black",textvariable=username)  # Creates username box to enter username
     username_entry.pack()
 
     lable = Label(register_screen, text="Passowrd:")
@@ -202,6 +220,31 @@ def preferences():
 
     answer = Entry(preference_screen, width=10, font=custom_font)
     answer.place(relx=0.5, rely=0.4, anchor="center")
+
+    def on_key_release(event: Event) -> None:
+        current_text = answer.get().lower()
+
+        # TODO: Since the backend has a way to get all of the genre options,
+        # I think we should have a dropdown menu or something of the sort
+        # which shows the user the options they have. That way, we can also
+        # gracefully handle any potential errors here instead of further down
+        # the line.
+
+        # Example idea:
+        # Since the genres are static, they could be passed as an argument?
+        # then, we can do something like:
+        # for genre in genres
+        #   if genre.startswith(current_text):
+        #       Show the genre in a box under the text area
+        #       potentially allow them to click it and have it auto-fill?
+
+    # This has the on_key_release function be run whenever the user presses (releases) a key
+    answer.bind("<KeyRelease>", on_key_release)
+
+    # Just one other quick note; I don't think nested functions are the best idea.
+    # I believe PythonTA doesn't allow them, and even if, they can make the code
+    # pretty hard to read. That said, I'm not super familiar w/ tkinter so if that's
+    # the norm, then totally disreguard this :)
 
     def _reco():
         _answer = answer.get().strip().lower()
