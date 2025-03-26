@@ -1,0 +1,15 @@
+Problem Description and Research Question/Goal
+Your project is a fun one and should teach you a lot about applying graphs in a practical scenario. I like that you plan on incrementally building up your project, and your dataset of choice is perfect for what you want to implement.
+
+Computational Plan
+Use of trees and/or graphs:
+
+The structure of your graph is clear and makes sense, but you don't actually describe what you plan to do with it. The meat and potatoes of this project is how you will use the graph structure to find recommendations, and you need to have that figured out before you start implementing your graph, as it could/will affect your design choices. One way you could implement this is by making a compatibility score between users and different parameters (such as genre) based on the average rating they give to that parameter. You could then try to find users with preferences similar to the preferences given through your interface, and recommend movies that similar users liked. But feel free to find the approach that you find most interesting, as long as it uses the graph's properties.
+
+Use of external libraries:
+
+Using Tkinter for your GUI and visualization needs is a good idea. I strongly recommend using Pandas and Numpy to help store and manipulate your data given that you need to reformat it to fit a graph like structure.
+
+Computational complexity of the project:
+
+Overall, the project is complex and should teach you a lot about what insights you can gain from graph representations. I recommend spending time refining how exactly your recommendation system. Good luck!

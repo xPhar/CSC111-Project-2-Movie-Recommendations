@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{array}
+
+\title{CSC111 Project Proposal: Movie Suggestion Algorithm}
+\author{Chettleburgh, Aiden - Member 2 - Member 3 - Member 4}
+\date{Saturday, February 22, 2025}
+
+\begin{document}
+\maketitle
+
+\section*{Problem Description and Research Question}
+With the increasing number of movies available across streaming platforms, choosing what to watch is becoming an ever-overwhelming task for users. The recommendation systems found on Netflix, Disney+, Hulu, and most other streaming platforms often disproportionately promote their own in-house productions. Additionally, these platforms won't recommend movies available on their competitors' platforms, making searching even harder when the average household subscribes to 3+ streaming services (Fitzgerald 2019). Given the relative lack of personalization these algorithms offer, users all too often waste valuable time searching for —instead of watching— movies. Our project aims to create a graph-based movie recommendation system that improves upon suggestions by using movie attributes, user preferences, and their relationships between films. This problem is important as a well-designed recommendation system can cut the time spent searching for movies, leaving more time for them to be watched. We can provide more accurate and personalized recommendations by modelling movies, users, and their relationships using graphs. Instead of relying solely on what similar users are interested in, as platforms like Netflix do, we will focus more broadly on the user's preferences and interests (Center n.d.).\\
+Project question/goal: \textbf{How can we use graph-based models to improve personalized movie recommendations by comparing the relationship between user preferences and movie attributes?}
+
+\section*{Computational Plan}
+
+We plan to use graph(s), where individual movies and users are vertices, and edges represent a user's rating. The movie vertex will hold a 'Movie' object, which stores various information pertaining to a movie, such as the title, runtime, featured actors/actresses, average rating, a brief description, and any tags attributed by users (from the dataset). Additional information could be added as we flesh out the recommendation algorithm and UI design. User vertexes will, similarly, hold objects which centralize information such as a user's total reviews, average review score, preferences, and a list/set of their individual review ratings. 
+We plan to use the MovieLens dataset provided by Grouplens. We are choosing this dataset as it is very accessible, fairly up-to-date, and offers a cut-down sample to use for development purposes (GroupLens n.d.). This will allow us to conduct tests through development more efficiently instead of loading the entire dataset every time. We may also use resources from TheMovieDB or IMDb to gather additional movie information. By default, the dataset provides only the name and genre of movies. If we decide to carry additional information, we will need to use the provided ID translation and query one of these services via their API to gather the wanted information. \\
+First, we must read from the dataset to build our graph; this includes iterating over the csv files from the dataset and generating relevant movie and user vertexes with their respective fields. Next, we plan to prompt the user for their preferences, either by asking for what types of movies they like (genre, length, etc.) or by asking them for a list of movies they've already watched and how they would rate them. Then, using the generated graph, we can search for movies that align most to their interests and recommend those generally rated highest or rated highest by people with similar interests in the dataset. Using Tkinter, we will build a GUI to facilitate asking the user questions about their movie preferences and to display the results. This will initially have just the most basic fields required to get data from the user. If time permits, we may add additional features such as displaying movie posters, other users (from the dataset) with similar interests, etc.. We may also allow users to save their preferences to a file, allowing them to reuse the tool in the future without needing to repopulate all fields.\\\\
+Below are snippets from the sample dataset:
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    userId & movieId & rating & timestamp \\ \hline
+    1      & 1       & 4      & 964982703 \\ \hline
+    1      & 3       & 4      & 964981247 \\ \hline
+    1      & 47      & 5      & 964983815 \\ \hline
+    6      & 205     & 3      & 845555477 \\ \hline
+    6      & 207     & 4      & 845554024 \\ \hline
+  \end{tabular}
+  \caption{ratings.csv example data}
+\end{table}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{|c|c|c|}
+    \hline
+    movieId & title                        & genres \\ \hline
+    1       & Toy Story (1995)             & Adventure|Animation|Children|Comedy|Fantasy \\ \hline
+    3       & Grumpier Old Men (1995)      & Comedy|Romance \\ \hline
+    47      & Seven (a.k.a. Se7en) (1995)  & Mystery|Thriller \\ \hline
+    205     & Unstrung Heroes (1995)       & Comedy|Drama \\ \hline
+    207     & Walk in the Clouds, A (1995) & Drama|Romance \\ \hline
+  \end{tabular}
+  \caption{movies.csv example data}
+\end{table}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    userId & movieId & tag          & timestamp  \\ \hline
+    2      & 60756   & funny        & 1445714994 \\ \hline
+    7      & 48516   & way too long & 1169687325 \\ \hline
+    18     & 431     & gangster     & 1462138749 \\ \hline
+    18     & 431     & mafia        & 1462138755 \\ \hline
+  \end{tabular}
+  \caption{tags.csv example data}
+\end{table}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{|c|c|c|}
+    \hline
+    movieId & imdbId & tmdbId \\ \hline
+    1       & 114709 & 862    \\ \hline
+    2       & 113497 & 8844   \\ \hline
+    3       & 113228 & 15602  \\ \hline
+    4       & 114885 & 31357  \\ \hline
+  \end{tabular}
+  \caption{links.csv example data}
+\end{table}
+
+\section*{References}
+Center, Netflix Help. n.d. \textit{How Netflix's Recommendations System Works.} Accessed March 4, 2025. \\
+\indent https://help.netflix.com/en/node/100639/. \\
+Fitzgerald, Toni. 2019. \textit{How Many Streaming Video Services Does The Average Person Subscribe To?} \\
+\indent March 29. Accessed March 4, 2025. \\
+\indent https://www.forbes.com/sites/tonifitzgerald/2019/03/29/how-many-streaming-video-services-does-the-average-person-
+\indent subscribe-to/. \\
+GroupLens. n.d. \textit{MovieLens}. Accessed March 4, 2025. \\
+\indent https://grouplens.org/datasets/movielens/.
+
+\end{document}
