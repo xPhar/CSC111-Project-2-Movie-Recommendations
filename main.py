@@ -1,5 +1,5 @@
-import GUI
+import gui
 
 if __name__ == "__main__":
-    GUI.create_window("data/ml-latest-small")
+    gui.create_window("data/ml-latest-small")
     pass
