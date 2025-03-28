@@ -2,7 +2,6 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import font as tkfont
 import uuid
-
 from api import BackendInstance
 
 def create_window(dataset_path: str) -> None:
