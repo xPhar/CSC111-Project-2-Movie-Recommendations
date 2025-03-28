@@ -1,15 +1,21 @@
+'''
+This module acts as a user interface, where the user can interact with the code to find a recommended movie.
+'''
 from tkinter import *
 from tkinter import ttk
 from tkinter import font as tkfont
 import uuid
+import python_ta
 from api import BackendInstance
 
+
 def create_window(dataset_path: str) -> None:
-    """  Initialize the backend instance using the dataset path.
+    """  Initialize the backend instance using the dataset path, And starts the interface once called.
 
     Preconditions:
     - dataset_path is a valid directory containing "movies.csv" and "ratings.csv"
     """
+
     movies_file_path = dataset_path + "/movies.csv"
     ratings_file_path = dataset_path + "/ratings.csv"
 
@@ -48,7 +54,7 @@ def create_window(dataset_path: str) -> None:
         password_entry.pack()
         Label(login_screen, text="").pack()
 
-        def _button():
+        def _button() -> None:
             """
             Retrieve entered username and password and attempt login.
             """
@@ -152,7 +158,7 @@ def create_window(dataset_path: str) -> None:
         lable = Label(register_screen, text="")
         lable.pack()
 
-        def _button():
+        def _button() -> None:
             entered_username = username.get()
             entered_password = password_var.get()
             confirm = confirm_var.get()
@@ -183,8 +189,8 @@ def create_window(dataset_path: str) -> None:
             elif password != confirm:
                 Label(register_screen, fg="white", text="The passwords do not match, try again.").pack()
             else:
-                file = open("user.txt", "a")
-                file.write(user_id + " " + username + " " + password + "\n")
+                with open("user.txt", "a") as file:
+                    file.write(user_id + " " + username + " " + password + "\n")
                 file.close()
                 _id = user_id
                 register_sucsess()
@@ -218,7 +224,7 @@ def create_window(dataset_path: str) -> None:
         except:
             pass
 
-        def combined():
+        def combined() -> None:
             menu_destroy()
             preferences()
 
@@ -237,7 +243,7 @@ def create_window(dataset_path: str) -> None:
     def menu_destroy() -> None:
         menu_screen.destroy()
 
-    def preferences():
+    def preferences() -> None:
         """
         Display genre selection options for personalized movie recommendations.
         """
@@ -272,7 +278,7 @@ def create_window(dataset_path: str) -> None:
 
         vert_scroll.config()
 
-        def _reco():
+        def _reco() -> None:
             selected_indices = genres.curselection()
             selected_genres = [genres.get(i) for i in selected_indices]
             p_destroy()
@@ -281,7 +287,7 @@ def create_window(dataset_path: str) -> None:
         submit = Button(preference_screen, text="Submit", font=custom_font, command=_reco)
         submit.place(relx=0.5, rely=0.65, anchor="center")
 
-        def _return():
+        def _return() -> None:
             p_destroy()
             menu()
 
@@ -326,7 +332,7 @@ def create_window(dataset_path: str) -> None:
 
         tree.pack()
 
-        def _return():
+        def _return() -> None:
             reco_destroy()
             preferences()
 
@@ -339,7 +345,7 @@ def create_window(dataset_path: str) -> None:
     def reco_destroy() -> None:
         reco_screen.destroy()
 
-    def on_row_selected(event) -> list[any]:
+    def on_row_selected(event: Event) -> None:
         """
         Retrieve data from the selected movie row.
         """
@@ -349,7 +355,7 @@ def create_window(dataset_path: str) -> None:
             row_data = tree.item(selected_item, "values")
         add(row_data)
 
-    def add(select_row) -> None:
+    def add(select_row: list[tuple[str, int, float, set[str]]]) -> None:
         """
         Display confirmation that a movie has been added to the watched list.
         """
@@ -359,7 +365,7 @@ def create_window(dataset_path: str) -> None:
         added_screen.geometry("1000x550+240+150")
         reco_screen.destroy()
 
-        label = Label(added_screen, text=f"The following will be added to your profile as watched:", width=60,
+        label = Label(added_screen, text="The following will be added to your profile as watched:", width=60,
                       height=5, font=custom_font2)
         label.place(relx=0.5, rely=0.1, anchor="center")
 
@@ -372,7 +378,7 @@ def create_window(dataset_path: str) -> None:
         rerun = Button(added_screen, text="Return to Menu", font=custom_font, command=menu)
         rerun.place(relx=0.5, rely=0.7, anchor="center")
 
-    def save(row):
+    def save(row: list[tuple[str, int, float, set[str]]]) -> None:
         """
         Save the selected movie to the watched movies file.
 
@@ -400,7 +406,7 @@ def create_window(dataset_path: str) -> None:
                     movies.append(f"{userid[1]}")
         return movies
 
-    def watched_movies():
+    def watched_movies() -> None:
         """
         Displays a scrolable list of all movies watched by user, in order.
         """
@@ -433,7 +439,7 @@ def create_window(dataset_path: str) -> None:
 
         vert_scroll.config()
 
-        def _return():
+        def _return() -> None:
             watched_screen.destroy()
             menu()
 
@@ -452,6 +458,4 @@ def create_window(dataset_path: str) -> None:
     register.place(relx=0.5, rely=0.5, anchor="center")
 
     main_window.mainloop()
-
-
 
