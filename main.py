@@ -1,3 +1,5 @@
+import GUI
+
 if __name__ == "__main__":
-    # TODO: Run the program...
+    GUI.create_window("data/ml-latest-small")
     pass
