@@ -1,0 +1,8 @@
+# Testing and code checking
+python-ta~=2.9.1
+
+# Graphics and data visualization
+Tkinter = 8.6.15
+pandas = 2.2.3
+
+# Specific to a later exercise
