@@ -1,8 +1,10 @@
+"""CSC111 Project 2 - Movie Recommendation System
+Last Updated: 29/3/25
+Edited by: Aiden
+"""
 from __future__ import annotations
 from typing import Any
 
-# Note: These classes are currently taken directly from Exercise 3, they should be updated as we decide how our data will be layed out
-# TODO: Figure out the above :)
 
 class _Vertex:
     """A vertex superclass, holding fields and methods shared by both movies and users
@@ -13,16 +15,17 @@ class _Vertex:
     Representation Invariants:
         - self not in {review.user, review.movie for review in self.reviews}
     """
-    _reviews: set[Review]
+    reviews: set[Review]
 
     def __init__(self) -> None:
         """Initialize a new vertex with no reviews.
         """
-        self._reviews = set()
+        self.reviews = set()
 
     def degree(self) -> int:
-        """Return the degree of this vertex."""
-        return len(self._reviews)
+        """Return the degree of this vertex.
+        """
+        return len(self.reviews)
 
 
 class _Movie(_Vertex):
@@ -47,15 +50,17 @@ class _Movie(_Vertex):
         self.genres = genres
 
     def avg_review_score(self) -> float:
+        """Return the average review score of this movie.
+        """
         tot_rating = 0
-        
-        for review in self._reviews:
+
+        for review in self.reviews:
             tot_rating += review.rating
 
-        return tot_rating / len(self._reviews)
+        return tot_rating / len(self.reviews)
 
     def bayesian_weighted_score(self, avg: float, num_confident: int) -> float:
-        """ Return the weighted score of this movie.
+        """ Return the bayesian weighted score of this movie.
 
         The weighted score will be from [0-5], calculated using the average review score,
         but taking into account the total number of reviews.
@@ -63,10 +68,10 @@ class _Movie(_Vertex):
         For instance, a movie rated 5.0, but with only 1 or 2 reivews should be weighted lower
         than a movie with 10+ reviews. 
         """
-        num_reviews = len(self._reviews)
+        num_reviews = len(self.reviews)
 
         temp = num_reviews / (num_reviews + num_confident) * self.avg_review_score() \
-                + num_confident / (num_reviews + num_confident) * avg
+            + num_confident / (num_reviews + num_confident) * avg
 
         return temp
 
@@ -78,9 +83,9 @@ class _Movie(_Vertex):
             return 0
 
         # Create a set holding the verticies' shared neighbours
-        shared_reviews = self._reviews.intersection(other_movie._reviews)
+        shared_reviews = self.reviews.intersection(other_movie.reviews)
         # Create a set holding the verticies' non-shared neighbours
-        unique_reviews = self._reviews.union(other_movie._reviews)
+        unique_reviews = self.reviews.union(other_movie.reviews)
         # Return the number of shared neighbours / number of unique neighbours
         return len(shared_reviews) / len(unique_reviews)
 
@@ -116,14 +121,14 @@ class Review:
         self.rating = rating
 
 
-class Review_Graph:
+class ReviewGraph:
     """A graph used to represent a network of movie reviews.
 
     """
     # Private Instance Attributes:
     #     - _vertices:
     #         A collection of the vertices contained in this graph.
-    #         Maps item to _Vertex object.
+    #         Maps an item to a _Vertex object.
     _vertices: dict[Any, _Movie | _User]
 
     def __init__(self) -> None:
@@ -159,8 +164,8 @@ class Review_Graph:
 
             review = Review(user, movie, score)
 
-            user._reviews.add(review)
-            movie._reviews.add(review)
+            user.reviews.add(review)
+            movie.reviews.add(review)
         else:
             raise ValueError
 
@@ -172,10 +177,10 @@ class Review_Graph:
         if user_id in self._vertices and movie_title in self._vertices:
             user = self._vertices[user_id]
             movie = self._vertices[movie_title]
-            return any(movie is review.movie for review in user._reviews)
+            return any(movie is review.movie for review in user.reviews)
         else:
             return False
-        
+
     def get_similarity_score(self, movie1: str, movie2: str) -> float:
         """Return the similarity score between the two given movies in this graph.
 
@@ -193,11 +198,37 @@ class Review_Graph:
         else:
             raise ValueError
 
+    def get_movie_details(self, title: str) -> tuple[str, int, float, set[str]]:
+        """Return a list providing the title, year of release, review score, and genres
+        of the given movie.
+
+        Preconditions:
+        - title in self._verticies
+        """
+        movie = self._vertices[title]
+
+        return movie.title, movie.year, movie.avg_review_score(), movie.genres
+
     def get_movies(self) -> list[str]:
-        return [vertex.title for vertex in self._vertices if type(vertex) is _Movie]
-    
+        """Return the title of every movie in the graph.
+        """
+        a = list(self._vertices.keys())
+        print(type(self._vertices[a[0]]))
+        return [vertex.title for vertex in self._vertices.values() if isinstance(vertex, _Movie)]
+
     def get_genres(self) -> list[str]:
-        return {genre for genre in {self._vertices[movie].genres for movie in self.get_movies()}}
+        """Retrun every genre represented in the graph
+        """
+        genres = set()
+
+        for movie in self.get_movies():
+            genres.update(self._vertices[movie].genres)
+
+        # A select few movies have no genres listed. This shouldn't be included as a "genre"
+        if "(no genres listed)" in genres:
+            genres.remove("(no genres listed)")
+
+        return genres
 
     def get_neighbours(self, item: int | str) -> set:
         """Return a set of the neighbours of the given item.
@@ -207,55 +238,78 @@ class Review_Graph:
         """
         if item in self._vertices:
             vertex = self._vertices[item]
-            if type(vertex) is _Movie:
-                return {review.user.user_id for review in vertex._reviews}
+            if isinstance(vertex, _Movie):
+                return {review.user.user_id for review in vertex.reviews}
             else:
-                return {review.movie.title for review in vertex._reviews}
+                return {review.movie.title for review in vertex.reviews}
         else:
             raise ValueError
 
     def recommend_by_genre(self, genres: set[str], num_recommendations: int) -> list[str]:
+        """Return a list of length num_reccomendations containing the titles of recommended movies.
+        Movies are recommended based on the given genres.
+
+        This works similarly to the recommendation system from Exercise 3, but only compares movies which
+        match the users given genres. Movies matching multiple genres are weighted more heavily. 
+        """
         matching_movies = self._movies_matching_genre(genres)
 
         avg_movie_rating = self._avg_movie_rating()
 
         # This will sort from worst match to best, so we want the movies at the end of the list
-        matching_movies.sort(key=lambda movie:_genre_recommendation_key(movie, genres, avg_movie_rating, 50))
+        matching_movies.sort(key=lambda movie: _genre_recommendation_key(movie, genres, avg_movie_rating, 50))
 
         return [movie.title for movie in matching_movies[len(matching_movies) - num_recommendations:]]
-        
+
     def _movies_matching_genre(self, genres: set[str]) -> list[_Movie]:
-        return [vertex for vertex in self._vertices.values() if type(vertex) is _Movie and any({genre in vertex.genres for genre in genres}) and len(vertex._reviews) > 0] 
+        """Return a list of movies which match at least one of the given genres.
+        """
+        return [vertex for vertex in self._vertices.values()
+                if isinstance(vertex, _Movie)
+                and any({genre in vertex.genres for genre in genres}) and len(vertex.reviews) > 0]
 
     def _avg_movie_rating(self) -> float:
+        """Return the average rating of a movie in the graph.
+        """
         num_movies = 0
         total_score = 0
         for vertex in self._vertices.values():
-            if type(vertex) is _Movie and len(vertex._reviews) > 0:
+            if isinstance(vertex, _Movie) and len(vertex.reviews) > 0:
                 num_movies += 1
                 total_score += vertex.avg_review_score()
-        
+
         return total_score / num_movies
 
     def recommend_by_similarity(self, movies: set[str], max_recommendations: int, min_rating: float = 3.5) -> list[str]:
+        """Return a list of length num_reccomendations containing the titles of recommended movies.
+        Movies are recommended based on the given movies. Only movies with the given minimum rating are considered.
+
+        This uses the bayesian weighted score to compare movies, helping to mitigate the influence of
+        less popular movies with few reviews.
+        """
         all_movies = self.get_movies()
 
         # Only look for movies with a weighted rating of at least min_rating
-        movies_to_compare = [movie for movie in all_movies
-                             if self._vertices[movie].bayesian_weighted_score(self._avg_movie_rating(), 50) > min_rating]
-        
+        movies_to_compare = [movie for movie in all_movies if
+                             self._vertices[movie].bayesian_weighted_score(self._avg_movie_rating(), 50) > min_rating]
+
         similarity = self._calculate_similarities(movies, movies_to_compare)
 
-        recommendations = [movie for movie in similarity.keys()].sort(key=lambda movie: similarity[movie])
-        
+        recommendations = list(similarity.keys())
+        recommendations.sort(key=lambda movie: similarity[movie])
+
         if len(recommendations) > max_recommendations:
             return recommendations[len(recommendations) - max_recommendations]
         else:
             return recommendations
 
     def _calculate_similarities(self, liked_movies: list[str], movies_to_compare: list[str]) -> dict[str, float]:
-        net_similarity = {}
+        """Return a dictionary mapping movie titles to their similarity to the movies in liked_movies.
         
+        If a movie is similar to multiple liked movies, the sum of their similarity scores is given.
+        """
+        net_similarity = {}
+
         for liked_movie in liked_movies:
             for movie in movies_to_compare:
                 # Calculate the similarity score
@@ -270,10 +324,30 @@ class Review_Graph:
 
         return net_similarity
 
+
 def _genre_recommendation_key(movie: _Movie, genres: set[str], avg_rating: float, confidence_interval: int) -> float:
+    """Return the weighted score of the movie weighted by its number of matching genres to the given genres.
+    """
     weighted_score = movie.bayesian_weighted_score(avg_rating, confidence_interval)
 
     num_matching_genres = len(set(genres).intersection(movie.genres))
     num_genres = len(movie.genres)
 
     return weighted_score * (0.9 + (num_matching_genres / num_genres) / 10)
+
+
+if __name__ == '__main__':
+    # You can uncomment the following lines for code checking/debugging purposes.
+    # However, we recommend commenting out these lines when working with the large
+    # datasets, as checking representation invariants and preconditions greatly
+    # increases the running time of the functions/methods.
+    import python_ta.contracts
+    python_ta.contracts.check_all_contracts()
+
+    import python_ta
+    python_ta.check_all(config={
+        'max-line-length': 120,
+        'disable': ['E1136'],
+        'extra-imports': ['graph_building'],
+        'max-nested-blocks': 4
+    })

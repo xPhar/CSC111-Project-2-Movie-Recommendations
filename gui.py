@@ -1,11 +1,11 @@
-'''
-This module acts as a user interface, where the user can interact with the code to find a recommended movie.
-'''
+"""CSC111 Project 2 - Movie Recommendation System
+Last Updated: 29/3/25
+Edited by: Ozzie, Aiden
+"""
 from tkinter import *
 from tkinter import ttk
 from tkinter import font as tkfont
 import uuid
-import python_ta
 from api import BackendInstance
 
 
@@ -267,13 +267,9 @@ def create_window(dataset_path: str) -> None:
         vert_scroll.config(command=genres.yview)
         vert_scroll.grid(row=0, column=1, sticky="ns")
 
-        list_genres = [
-            'Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime',
-            'Documentary', 'Drama', 'Fantasy', 'Horror', 'Musical',
-            'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War'
-        ]
+        available_genres = backend.get_genres()
 
-        for genre in list_genres:
+        for genre in available_genres:
             genres.insert(END, genre)
 
         vert_scroll.config()
@@ -312,7 +308,7 @@ def create_window(dataset_path: str) -> None:
         Label(reco_screen, text="Movie Reco", width=30, height=5, font=custom_font).pack()
         Label(reco_screen, text="").pack()
 
-        recommended_movie = backend.get_recommendations_from_genres(answer, 5)
+        recommended_movie = backend.get_recs_from_genres(answer, 5)
 
         tree = ttk.Treeview(reco_screen, columns=("Title", "Year", "Rating", "Genre"), show="headings", height=10)
 
@@ -345,7 +341,7 @@ def create_window(dataset_path: str) -> None:
     def reco_destroy() -> None:
         reco_screen.destroy()
 
-    def on_row_selected(event: Event) -> None:
+    def on_row_selected() -> None:
         """
         Retrieve data from the selected movie row.
         """
@@ -353,7 +349,7 @@ def create_window(dataset_path: str) -> None:
         selected_item = tree.focus()
         if selected_item:
             row_data = tree.item(selected_item, "values")
-        add(row_data)
+            add(row_data)
 
     def add(select_row: list[tuple[str, int, float, set[str]]]) -> None:
         """
@@ -459,3 +455,19 @@ def create_window(dataset_path: str) -> None:
 
     main_window.mainloop()
 
+
+if __name__ == '__main__':
+    # You can uncomment the following lines for code checking/debugging purposes.
+    # However, we recommend commenting out these lines when working with the large
+    # datasets, as checking representation invariants and preconditions greatly
+    # increases the running time of the functions/methods.
+    import python_ta.contracts
+    python_ta.contracts.check_all_contracts()
+
+    import python_ta
+    python_ta.check_all(config={
+        'max-line-length': 120,
+        'disable': ['E1136'],
+        'extra-imports': ['tkinter, uuid, api'],
+        'max-nested-blocks': 4
+    })
