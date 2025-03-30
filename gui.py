@@ -308,7 +308,7 @@ def create_window(dataset_path: str) -> None:
         Label(reco_screen, text="Movie Reco", width=30, height=5, font=custom_font).pack()
         Label(reco_screen, text="").pack()
 
-        recommended_movie = backend.get_recs_from_genres(answer, 5)
+        recommended_movie = backend.get_recs_from_genres(answer, 10)
 
         tree = ttk.Treeview(reco_screen, columns=("Title", "Year", "Rating", "Genre"), show="headings", height=10)
 
