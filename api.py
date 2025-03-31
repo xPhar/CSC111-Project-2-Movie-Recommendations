@@ -39,6 +39,9 @@ class BackendInstance:
         """
         movies = self._review_graph.recommend_by_genre(genres, num_recs)
 
+        # Reverse the list so the top recommendation is listed first
+        movies.reverse()
+
         return self._format_recommendations(movies)
 
     # TODO: TEST IF THIS ACTUALLY WORKS!!!

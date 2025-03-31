@@ -119,9 +119,11 @@ def create_window(dataset_path: str) -> None:
         success_screen.geometry("150x100+200+100")
         success_screen.title("Sucsess")
         Label(success_screen, text="Login successful").pack()
-        Button(success_screen, text="Ok", width=5, height=2, bg="grey", command=success_screen.destroy).pack()
+        def _on_press():
+            success_screen.destroy()
+            menu()
+        Button(success_screen, text="Ok", width=5, height=2, bg="grey", command=_on_press).pack()
         login_screen.destroy()
-        menu()
 
     def register() -> None:
         '''
@@ -194,7 +196,6 @@ def create_window(dataset_path: str) -> None:
                 file.close()
                 _id = user_id
                 register_success()
-                menu()
 
     def register_success() -> None:
         """
@@ -205,7 +206,10 @@ def create_window(dataset_path: str) -> None:
         success_screen.geometry("150x100+200+100")
         success_screen.title("Sucsess")
         Label(success_screen, text="Sign in successful").pack()
-        Button(success_screen, text="Ok", width=5, height=2, bg="grey", command=success_screen.destroy).pack()
+        def _on_press():
+            success_screen.destroy()
+            menu()
+        Button(success_screen, text="Ok", width=5, height=2, bg="grey", command=_on_press).pack()
         register_screen.destroy()
 
     def menu() -> None:
