@@ -212,8 +212,6 @@ class ReviewGraph:
     def get_movies(self) -> list[str]:
         """Return the title of every movie in the graph.
         """
-        a = list(self._vertices.keys())
-        print(type(self._vertices[a[0]]))
         return [vertex.title for vertex in self._vertices.values() if isinstance(vertex, _Movie)]
 
     def get_genres(self) -> list[str]:
