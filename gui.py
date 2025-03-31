@@ -47,7 +47,7 @@ def create_window(dataset_path: str) -> None:
         username_entry = Entry(login_screen, fg="black", textvariable=username)
         username_entry.pack()
 
-        lable = Label(login_screen, text="Passowrd:")
+        lable = Label(login_screen, text="Password:")
         lable.pack()
 
         password_entry = Entry(login_screen, fg="black", show='*', textvariable=password)
@@ -73,7 +73,7 @@ def create_window(dataset_path: str) -> None:
 
     def login2(entered_username: str, entered_password: str) -> None:
         '''
-        This function checks if verify_login returns true or false, resulting in a sucsessful login vs unsuscsessful
+        This function checks if verify_login returns true or false, resulting in a successful login vs unsuscsessful
 
         Preconditions:
             - isintance(entered_username, str) == true
@@ -82,7 +82,7 @@ def create_window(dataset_path: str) -> None:
         '''
         if verify_login(entered_username, entered_password):
             Label(login_screen, text="Login successful!").pack()
-            login_sucsess()
+            login_success()
 
         else:
             Label(login_screen, text="Login failed. Incorrect username or password.").pack()
@@ -110,16 +110,16 @@ def create_window(dataset_path: str) -> None:
                         return True
         return False
 
-    def login_sucsess() -> None:
+    def login_success() -> None:
         '''
         Display a success message and transition to the main menu.
         '''
-        global sucsess_screen
-        sucsess_screen = Toplevel(main_window)
-        sucsess_screen.geometry("150x100+200+100")
-        sucsess_screen.title("Sucsess")
-        Label(sucsess_screen, text="Login sucsessful").pack()
-        Button(sucsess_screen, text="Ok", width=5, height=2, bg="grey", command=sucsess_screen.destroy).pack()
+        global success_screen
+        success_screen = Toplevel(main_window)
+        success_screen.geometry("150x100+200+100")
+        success_screen.title("Sucsess")
+        Label(success_screen, text="Login successful").pack()
+        Button(success_screen, text="Ok", width=5, height=2, bg="grey", command=success_screen.destroy).pack()
         login_screen.destroy()
         menu()
 
@@ -143,13 +143,13 @@ def create_window(dataset_path: str) -> None:
         username_entry = Entry(register_screen, fg="black", textvariable=username)
         username_entry.pack()
 
-        lable = Label(register_screen, text="Passowrd:")
+        lable = Label(register_screen, text="Password:")
         lable.pack()
 
         password_entry = Entry(register_screen, fg="black", show='*', textvariable=password_var)
         password_entry.pack()
 
-        lable = Label(register_screen, text="Confirm Passowrd:")
+        lable = Label(register_screen, text="Confirm Password:")
         lable.pack()
 
         confirm_entry = Entry(register_screen, fg="black", show='*', textvariable=confirm_var)
@@ -193,19 +193,19 @@ def create_window(dataset_path: str) -> None:
                     file.write(user_id + " " + username + " " + password + "\n")
                 file.close()
                 _id = user_id
-                register_sucsess()
+                register_success()
                 menu()
 
-    def register_sucsess() -> None:
+    def register_success() -> None:
         """
         Notify the user that registration was successful.
         """
-        global sucsess_screen
-        sucsess_screen = Toplevel(main_window)
-        sucsess_screen.geometry("150x100+200+100")
-        sucsess_screen.title("Sucsess")
-        Label(sucsess_screen, text="Sign in sucsessful").pack()
-        Button(sucsess_screen, text="Ok", width=5, height=2, bg="grey", command=sucsess_screen.destroy).pack()
+        global success_screen
+        success_screen = Toplevel(main_window)
+        success_screen.geometry("150x100+200+100")
+        success_screen.title("Sucsess")
+        Label(success_screen, text="Sign in successful").pack()
+        Button(success_screen, text="Ok", width=5, height=2, bg="grey", command=success_screen.destroy).pack()
         register_screen.destroy()
 
     def menu() -> None:
@@ -341,7 +341,7 @@ def create_window(dataset_path: str) -> None:
     def reco_destroy() -> None:
         reco_screen.destroy()
 
-    def on_row_selected() -> None:
+    def on_row_selected(e: Event) -> None:
         """
         Retrieve data from the selected movie row.
         """
