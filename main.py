@@ -6,4 +6,5 @@ import gui
 
 if __name__ == "__main__":
     # Create the GUI window
-    gui.create_window("data/ml-32m")
+    # Backend will use the specified dataset
+    gui.create_window("data/ml-latest-small")

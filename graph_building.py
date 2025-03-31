@@ -12,7 +12,7 @@ def load_movies_from_file(file_path: str, graph: ReviewGraph) -> dict[int, str]:
     Preconditions:
     - file_path corresponds to a csv file from the MovieLens dataset mapping movie id's to titles.
     """
-    dataframe = pd.read_csv(file_path, dtype={"movieId": "int32", "title": "str", "genres": "str"})
+    dataframe = pd.read_csv(file_path, nrows=100000, dtype={"movieId": "int32", "title": "str", "genres": "str"})
 
     movie_names = {}
 
@@ -34,6 +34,7 @@ def load_reviews_from_file(file_path: str, graph: ReviewGraph, movies: dict[int,
     - file_path corresponds to a csv file from the MovieLens dataset mapping users to movies w/ review scores.
     """
     dataframe = pd.read_csv(file_path,
+                            nrows=1000000,  # Limit to 1 million reviews to cut down on memory usage and loading time
                             usecols={"userId", "movieId", "rating"},
                             dtype={"userId": "int32", "movieId": "int32", "rating": "float32"})
 
@@ -48,8 +49,8 @@ if __name__ == '__main__':
     # However, we recommend commenting out these lines when working with the large
     # datasets, as checking representation invariants and preconditions greatly
     # increases the running time of the functions/methods.
-    import python_ta.contracts
-    python_ta.contracts.check_all_contracts()
+    # import python_ta.contracts
+    # python_ta.contracts.check_all_contracts()
 
     import python_ta
     python_ta.check_all(config={

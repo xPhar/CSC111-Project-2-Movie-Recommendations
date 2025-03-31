@@ -461,8 +461,8 @@ if __name__ == '__main__':
     # However, we recommend commenting out these lines when working with the large
     # datasets, as checking representation invariants and preconditions greatly
     # increases the running time of the functions/methods.
-    import python_ta.contracts
-    python_ta.contracts.check_all_contracts()
+    # import python_ta.contracts
+    # python_ta.contracts.check_all_contracts()
 
     import python_ta
     python_ta.check_all(config={
