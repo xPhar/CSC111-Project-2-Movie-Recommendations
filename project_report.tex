@@ -25,36 +25,35 @@ This report describes the development of a graph-based movie recommendation syst
 \end{abstract}
 
 \section{Introduction}
-With the ever-increasing number of movies available across multiple streaming platforms, users face the daunting challenge of deciding what to watch. Traditional recommendation systems on platforms like Netflix or Hulu often favor in-house productions and may not fully capture a user’s diverse preferences. Our project addresses this issue by developing a graph-based recommendation system. The core research question is:
+With the ever-increasing number of movies available across multiple streaming platforms, users face the daunting challenge of deciding what to watch. Traditional recommendation systems on platforms like Netflix or Hulu often favor in-house productions and may not fully capture a user’s diverse preferences \cite{Netflix}. Our project addresses this issue by developing a graph-based recommendation system. The core research question is:
 
 \begin{center}
 \textbf{How can we use graph-based models to improve personalized movie recommendations by comparing the relationships between user preferences and movie attributes?}
 \end{center}
 
-By modeling movies and users as vertices in a graph and user ratings as weighted edges, our approach leverages structural similarities to identify movies that align well with a user’s taste. This method aims to reduce the time users spend searching and increase the accuracy of recommendations. Our system is implemented in Python, with key modules responsible for data ingestion, graph construction, recommendation computation, and a user-friendly GUI for interaction.
+By modeling movies and users as vertices in a graph and user ratings as weighted edges, our approach leverages structural similarities to identify movies that align well with a user’s taste. This method aims to reduce the time users spend searching and increase the accuracy of recommendations. Our system is implemented in Python using libraries such as pandas and tkinter, with key modules responsible for data ingestion, graph construction, recommendation computation, and a user-friendly GUI for interaction.
 
 \section{Dataset Description}
-Our project primarily utilizes the MovieLens dataset provided by GroupLens \cite{GroupLens}. The dataset contains information on movies (titles, genres, and basic metadata) and user ratings, which are used to create vertices and weighted edges in the recommendation graph. Additional information such as movie descriptions and external tags has been incorporated by querying supplementary APIs (e.g., TheMovieDB) to enhance movie profiles.
+Our project primarily utilizes the MovieLens dataset provided by GroupLens \cite{GroupLens}. The dataset contains information on movies (titles, genres, and basic metadata) and user ratings, which are used to create vertices and weighted edges in the recommendation graph. While we originally planned to use external APIs to fetch additional information about the movies, we determined that the time-cost of this far outweighed its benefits for this particular project.
 
 Specifically, our system processes:
 \begin{itemize}
-    \item \textbf{ratings.csv:} Contains user ratings with fields such as \texttt{userId}, \texttt{movieId}, \texttt{rating}, and \texttt{timestamp}.
-    \item \textbf{movies.csv:} Includes movie details like \texttt{movieId}, \texttt{title}, and \texttt{genres}.
-    \item \textbf{tags.csv \& links.csv:} Provide additional metadata for movies.
+    \item \textbf{ratings.csv:} Contains individual user reviews for movies. Each line contains a \textbf{userId}, \textbf{movieId}, and \textbf{rating}, alongside a timestamp we have not utilized.
+    \item \textbf{movies.csv:} Maps the \textbf{movieId}'s found in \textit{ratings.csv} to tangible titles. Also provides each movies' genres.
 \end{itemize}
 
-Only relevant columns (e.g., \texttt{movieId}, \texttt{rating}, \texttt{genres}) are used to build the graph. We have also pre-processed the dataset to extract a manageable subset suitable for rapid testing and demonstration purposes.
+Only relevant columns (e.g., \texttt{movieId}, \texttt{rating}, \texttt{genres}) are used to build the graph. We also utilize a smaller provided dataset for faster recommendations, at the potential expense of accuracy and movie breadth.
 
 \section{Computational Overview}
-Our system is built in Python and is organized into several modules:
+Our project contains several modules, but can generally be separated into 3 categories:
 \begin{enumerate}
-    \item \textbf{Data Processing and Graph Construction:} A dedicated module reads CSV files from the MovieLens dataset, creates \texttt{Movie} and \texttt{User} objects, and builds a graph using the \texttt{networkx} library. In this graph, nodes represent movies and users, while edges capture the rating relationships.
-    \item \textbf{Recommendation Engine:} Based on the constructed graph, our recommendation engine uses similarity measures and weighted edge computations to identify movies that are similar to those a user has positively rated. This engine considers both direct ratings and indirect relationships via common user nodes.
-    \item \textbf{User Interface:} The GUI, built with Tkinter, prompts users for their preferences (e.g., favorite genres or a list of movies they liked) and displays the recommended movies. The interface is designed to be intuitive and requires minimal technical knowledge.
-    \item \textbf{Main Driver:} The \texttt{main.py} file serves as the entry point. It integrates the modules, loads the data, constructs the graph, and launches the GUI.
+    \item \textbf{Backend:} The \texttt{graph\_building.py} module is responsible solely for building a ReviewGraph from the dataset. It contains just 2 functions, \texttt{load\_movies\_from\_file} and \texttt{load\_reviews\_from\_file}, which are fairly self-explanatory. The rest of the action occurs in the \texttt{data\_types.py} module, which contains the Graph and Vertex classes. We've implemented distinct \texttt{\_Movie} and \texttt{\_User} classes, both of which inherit from the parent \texttt{\_Vertex} class. All vertices contain a set of \texttt{Review} objects, which simply hold a User, Movie, and a rating (float). Movie vertices additionally hold a title, year of release, and a set of genres. They also implement many additional methods such as \texttt{avg\_review\_score} and  \texttt{bayesian\_weighted\_score}. The only extra piece of information User vertices hold is a user\_id. Finally, the \texttt{ReviewGraph} class works similarly to the graphs we used in Exercises 3 and 4, but with many additional methods added. The most notable additions are \texttt{recommend\_by\_genre}, which recommends highly-rated movies which match a set of provided genres and \texttt{recommend\_by\_similarity}, which recommends movies similar to a given set of movies.
+    \item \textbf{API:} To make everything described above available to the user, \texttt{api.py} defines a \texttt{BackendInstance} class, which allows the UI to easily create a graph from a provided dataset, and query the graph as necessary. Most of this class simply calls the relevant functions from \texttt{ReviewGraph}, but it also ensures data is formatted in a way the frontend can easily work with.
+    \item \textbf{Frontend:} The GUI, built with Tkinter, prompts users for their preferences (e.g., favorite genres or a list of movies they liked) and displays the recommended movies. Utilizing the API when necessary, the GUI allows the user to generate recommendations with ease, only requiring traversing through a few menus. Furthermore, the frontend allows users to save their watched movies to a file, so when they look to generate new recommendations, they need not refill information.
 \end{enumerate}
 
-Throughout the code, best practices have been followed: modularization, clear function and variable naming, and comprehensive documentation (including inline comments and docstrings). The computational pipeline has been optimized for both clarity and performance.
+On the backend, we used the \textit{pandas} library to efficiently load data from file into our graph. Both functions in \texttt{graph\_building.py} make use of \texttt{pandas.read\_csv()}, which provides a "dataframe" that can be iterated over to read each row.
+On the frontend, we made frequent used of \textit{tkinter} to implement the GUI. Tkinter acts as an interface to \textbf{Tcl/Tk}, which is a widely-used GUI toolkit. Across the GUI, we used components like Frames, Labels, and Listboxes to provide data to the user in intuitive ways. For example, in the \texttt{preferences()} window function, a listbox is used to display all movie genres represented in the dataset (which is grabbed through the API) and allow the user to select their preferences.
 
 \section{Instructions for Obtaining Datasets and Running the Program}
 To run our project, please follow these steps:
@@ -63,7 +62,9 @@ To run our project, please follow these steps:
     \begin{verbatim}
 pip install -r requirements.txt
     \end{verbatim}
-    \item \textbf{Datasets:} Download the MovieLens dataset (included in the submission zip file) and any pre-processed data files.
+    \item \textbf{Datasets:} Please download and extract the zip file located \href{https://utoronto-my.sharepoint.com/:u:/g/personal/aiden_chettleburgh_mail_utoronto_ca/EWullXGtCOpBlOvOkgNzJrgBNfUv2LnhMl_ELSGbOVA1Lw?e=gBJdVQ}{here}. 
+    (Note: If you cannot access the file, please ensure you are logged in with your UofT credentials. The file is accessible only to those within UofT).
+    It should be placed in the root folder of the project (that is, the folder named "data" should sit in the same directory as \texttt{main.py}).
     \item \textbf{Execution:} From the command line or within your IDE, run the \texttt{main.py} file:
     \begin{verbatim}
 python main.py
@@ -74,41 +75,35 @@ python main.py
 \section{Changes from the Project Proposal}
 Since our initial proposal, several significant changes have been made:
 \begin{itemize}
-    \item \textbf{Algorithm Enhancements:} We refined our recommendation algorithm by incorporating weighted edges and additional similarity metrics. This has improved the accuracy of our recommendations compared to our initial plan.
-    \item \textbf{Data Enrichment:} While the proposal focused solely on the basic MovieLens data, we have now integrated supplementary movie metadata from external APIs. This extra information helps enhance the quality of recommendations.
-    \item \textbf{Interface Development:} Based on TA feedback, we developed a full-featured Tkinter GUI, making the system interactive and more user-friendly.
-    \item \textbf{Code Organization:} Our codebase has been restructured into multiple modules to better separate concerns, improve readability, and facilitate easier debugging and testing.
-    \item \textbf{Performance Optimizations:} We optimized data parsing and graph construction to support a larger subset of the dataset, ensuring that the system runs efficiently even with increased data volume.
+    \item \textbf{Algorithm Implementation:} We created two methods for generating recommendations, one based solely on a user's preferred movie genres, and another based on movies they've previously enjoyed. To achieve the first, movies are ranked based on their \textit{bayesian\_weighted\_ratings}, which helps to prevent movies with a small number of highly rated reviews from being overrated in recommendations. It does so by effectively adding "fake" reviews to movies. By adding extra reviews which are weighted to the average movie rating in the dataset, movies with few ratings tend towards the average instead of standing alone at the top or bottom of the rankings. The second algorithm takes a different approach than that showcased in Exercise 4. Instead of comparing the user to others in the dataset, their preferred movies themselves are compared to others in the dataset (that is, similar by genre), and those which are both rated highly and similar to multiple movies liked by the user are rated highest. We chose to take this approach as we found that it was fairly likely to make recommendations we viewed as "good", and avoided recommending obscure movies we didn't recognize.
+    \item \textbf{Supplemental Data:} While we originally hoped to have advanced information accessible through the GUI, such as movie trailers, actors, etc., we realized as the project continued that implementing these features was not feasible with our current skills and in the necessary timeframe. We've still made full use of the information provided by the dataset, as we've relied heavily on the included genres for recommendation purposes.
+    \item \textbf{Interface Development:} As originally planned, we used Tkinter to implement our GUI. While we originally hoped to have more information available to the user than we were able to provide, we did build upon our original plans by adding a login system which saves a user's watched movies to disk for future use.
+    \item \textbf{Performance Optimizations:} As recommended by our TA, we shifted to using pandas to manipulate our data for use in our graph.
 \end{itemize}
 
 \section{Discussion}
-Our graph-based movie recommendation system represents a significant evolution from the initial proposal. The decision to use a graph model allowed us to capture the nuanced relationships between users and movies that traditional recommendation systems often overlook. By treating movies and users as nodes and ratings as weighted edges, we were able to design an algorithm that computes similarities not only based on explicit user ratings but also via indirect connections through shared preferences.
 
-One of the primary advantages of this approach is the ability to integrate multiple sources of data. The incorporation of external metadata from TheMovieDB has enhanced the descriptive power of each movie node. This enrichment makes it possible to draw more meaningful connections between movies, even if the user ratings alone would not suffice. For instance, movies that might seem unrelated based solely on user ratings can be linked through common genres or similar cast members.
-
-In practice, the recommendation engine first builds the graph by reading and processing the MovieLens data. The use of \texttt{networkx} facilitated the creation and management of complex graph structures, and its built-in algorithms helped in calculating centrality and similarity measures. One challenge we encountered was ensuring that the graph remained manageable in size, as the full MovieLens dataset is quite large. To address this, we implemented data filtering techniques that focus on a representative subset of the data, thereby striking a balance between computational efficiency and recommendation accuracy.
-
-Our Tkinter-based GUI was designed with usability in mind. Early user testing revealed that clear instructions and a straightforward input interface were critical for non-technical users. As a result, we made several iterations on the design to ensure that the process—from entering preferences to viewing recommendations—was both intuitive and responsive. The feedback from these tests was invaluable in refining the final product.
-
-Despite the improvements, there are limitations to our current implementation. For example, the system’s performance can be affected by the size of the input dataset, and the reliance on static pre-processed data might not reflect real-time changes in user behavior. Moreover, while our similarity metrics work well for a controlled dataset, the model may require further calibration when exposed to more diverse and dynamic movie data.
-
-Looking forward, there are several potential enhancements. Future work could include integrating real-time user feedback to continuously update and refine the graph, implementing more sophisticated machine learning techniques to predict user preferences, and extending the GUI to provide additional interactive visualizations of the recommendation network. Additionally, experimenting with different graph-based algorithms might yield even better personalization results.
-
-Overall, this project has not only provided a robust system for movie recommendations but also offered significant insights into the benefits and challenges of graph-based data modeling. The iterative improvements made throughout the project demonstrate the importance of both user feedback and computational efficiency in developing an effective recommendation system.
+Our original goal with this project was to evaluate how graph-based models can be used to improve the personalization of recommendation algorithms. Through our exploration, we have learned both the pros and cons of this approach. \\
+For starters, Graph-based algorithms are indeed incredibly powerful, especially when built upon a large dataset. With great care and tuning, you can use graphs to generate very accurate recommendations for individual users. By comparing the similarity of movies and users, you can estimate what other users are \textit{like} your target, then use other movies they like as recommendations for your user. In this way, graphs are great! \\
+That said, the "great care and tuning" required is very real. Because the question of "What movies would this user enjoy?" is so open-ended, there are countless ways to generate recommendations from the "magic box" that is an incredibly large graph. Some ways will quickly reveal themselves as poor solutions, while others will appear to be very good until the last minute. This was largely the case with our implementation, as the idea of using genres and weighted ratings seemed to provide great results, until we compared it with the alternative we learned in Exercise 4. \\
+Truly, the greatest takeaway from this project is the importance of trying a variety of outside-the-box solutions. Devoid of comparison, any solution can appear to be a good one. Only by trying multiple methods and comparing can you truly evaluate your implementations. \\
+\\
+Our first major speed bump came very early, as we looked to decide how to format the data into a graph. Ultimately, we decided to create a Review class to serve as the edges of the graph, holding references to both the user and movie vertices, as well as the review rating. \\
+With this decision made, next came designing the recommendation algorithms in the graph. While we at first tried a system similar to that used in exercise 3, we ran into problems with incorrect recommendations and inconsistent results. Thus, we pivoted to our current approach, making greater use of the average rating of each movie alongside its genres to make recommendations. \\
+However, this came with its own set of issues, as we quickly realized that all of the recommended movies were very obscure. This was because these movies, given their obscurity, had only one or two reviews in the dataset. If these reviews were 4-5 stars, the movies would have an incredibly high average rating, placing them above more established movies, which have a variety of ratings. After some research, we came across the Bayesian average method, which incorporates a pre-existing belief to normalize ratings. In essence, the method "fibs" a bunch of average ratings onto each movie, shifting them towards the mean. This affects movies with a small number of ratings the most, as their average ends up being very close to the given average. Conversely, movies with a multitude of ratings aren't affected much, as the fibbed ratings make up only a small portion of the total. \\
+When it comes to the GUI, we ran into a variety of mostly small issues throughout our implementation. \\
+Firstly, we realized we vastly overestimated the power of tkinter. Implementing things such as video playback and collapsing menus requires significant work or the use of external packages, which often lack proper documentation. \\
+Next, tkinter has many pedantic limitations, which caused our implementation to feel fairly "chunky". Because everything is tied to a root window, we were forced to have subsequent menus open on top of the original menu instead of replacing it. While there are likely ways to circumvent this limitation, we didn't find it detrimental enough to the user experience to worry about it. \\
+Finally, we also spent a long time figuring out how to get the backend to communicate with the frontend. Because the two modules were completed separately, when it came to combining them, significant changes were required. Due to some miscommunications, much of the frontend implementation didn't work with the API developed by the backend. As a result, we needed to redesign many functions to make use of the single backend instance and to allow the results to be displayed back to the user. \\
+Ultimately, this project was a great introduction to the complexities of not just recommendation algorithms, but also full-stack development. We tackled algorithmic problems, implementation incompatibilities, and programming in a group environment. In the future, we could explore additional algorithms for generating recommendations, allowing us to gain an even deeper understanding of what makes recommendation algorithms "good". We could also spend more time redesigning the GUI to provide additional functionality and improve aesthetics. Finally, we could develop a better strategy for tackling large projects in groups, utilizing better communication and delegation skills to get more done faster.
 
 \section{References}
 \begin{thebibliography}{9}
-\bibitem{Center}
+\bibitem{Netflix}
 Center, Netflix Help. (n.d.). \textit{How Netflix’s Recommendations System Works}. Accessed March 4, 2025. \url{https://help.netflix.com/en/node/100639/}.
-
-\bibitem{Fitzgerald}
-Fitzgerald, T. (2019). \textit{How Many Streaming Video Services Does The Average Person Subscribe To?} Accessed March 4, 2025. \url{https://www.forbes.com/sites/tonifitzgerald/2019/03/29/}.
 
 \bibitem{GroupLens}
 GroupLens. (n.d.). \textit{MovieLens}. Accessed March 4, 2025. \url{https://grouplens.org/datasets/movielens/}.
-
-\bibitem{IMDb}
-IMDb. (n.d.). \textit{IMDb}. Retrieved from \url{https://www.imdb.com/}.
 
 \end{thebibliography}
 
