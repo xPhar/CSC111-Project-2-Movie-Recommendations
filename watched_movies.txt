@@ -1,24 +1,21 @@
-1, Matrix, The
-1,Toy Story
-1,Jumanji
-1,Grumpier Old Men
-1,Waiting to Exhale
-1,Father of the Bride Part II
-1,Heat
-1,Sabrina
-1,Tom and Huck
-1,Sudden Death
-1,GoldenEye
-1,American President, The
-1,Dracula: Dead and Loving It
-1,Balto
-1,Nixon
-1,Cutthroat Island
-1,Casino
-1,Spirited Away (Sen to Chihiro no kamikakushi)
-1,Star Wars: Episode IV - A New Hope
-1,Shawshank Redemption, The
-1,Crumb
-1,Schindler's List
-1,Star Wars: Episode V - The Empire Strikes Back
-1,Star Wars: Episode V - The Empire Strikes Back
+1,"Matrix, The"
+1,"Toy Story"
+1,"Jumanji"
+1,"Grumpier Old Men"
+1,"Waiting to Exhale"
+1,"Father of the Bride Part II"
+1,"Heat"
+1,"Sabrina"
+1,"Tom and Huck"
+1,"Sudden Death"
+1,"GoldenEye"
+1,"American President, The"
+1,"Dracula: Dead and Loving It"
+1,"Balto"
+1,"Nixon"
+1,"Cutthroat Island"
+1,"Spirited Away (Sen to Chihiro no kamikakushi)"
+1,"Star Wars: Episode IV - A New Hope"
+1,"Schindler's List"
+1,"Star Wars: Episode V - The Empire Strikes Back"
+1,"American History X"

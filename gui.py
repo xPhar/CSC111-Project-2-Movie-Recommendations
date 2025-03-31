@@ -6,6 +6,7 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import font as tkfont
 import uuid
+import csv
 from api import BackendInstance
 
 
@@ -232,13 +233,21 @@ def create_window(dataset_path: str) -> None:
             menu_destroy()
             preferences()
 
-        reco = Button(menu_screen, text="Recomendations", fg="black", highlightbackground="grey", width=30, height=5,
+        def recommend_by_watched() -> None:
+            menu_destroy()
+            movie_reco()
+
+        reco = Button(menu_screen, text="Recommend by Genre", fg="black", highlightbackground="grey", width=30, height=5,
                       command=combined)
-        reco.place(relx=0.5, rely=0.3, anchor="center")
+        reco.place(relx=0.5, rely=0.4, anchor="center")
+
+        reco = Button(menu_screen, text="Recommend by Movie", fg="black", highlightbackground="grey", width=30, height=5,
+                      command=recommend_by_watched)
+        reco.place(relx=0.5, rely=0.6, anchor="center")
 
         watch = Button(menu_screen, text="Watched Movies", fg="black", highlightbackground="grey", width=30, height=5,
                        command=watched_movies)
-        watch.place(relx=0.5, rely=0.5, anchor="center")
+        watch.place(relx=0.5, rely=0.8, anchor="center")
 
         back = Button(menu_screen, text="Log Out", fg="black", highlightbackground="grey", width=10, height=2,
                       command=menu_destroy)
@@ -342,6 +351,47 @@ def create_window(dataset_path: str) -> None:
                       height=2, command=_return)
         back.place(relx=0.08, rely=0.08, anchor="center")
 
+    def movie_reco() -> None:
+        """
+        Show movie recommendations based on watched movies.
+        """
+        global movie_reco, tree
+        movie_reco = Toplevel(main_window)
+        movie_reco.title("Recommendation By Movie")
+        movie_reco.geometry("1000x550+240+150")
+        Label(movie_reco, text="Movie Reco", width=30, height=5, font=custom_font).pack()
+        Label(movie_reco, text="").pack()
+
+        recommended_movie = backend.get_recs_from_movies(get_watched_movies(), 10)
+
+        tree = ttk.Treeview(movie_reco, columns=("Title", "Year", "Rating", "Genre"), show="headings", height=10)
+
+        tree.heading("Title", text="Title")
+        tree.heading("Year", text="Year")
+        tree.heading("Rating", text="Rating")
+        tree.heading("Genre", text="Genre")
+
+        tree.column("Title", anchor=CENTER)
+        tree.column("Year", anchor=CENTER)
+        tree.column("Rating", anchor=CENTER)
+        tree.column("Genre", anchor=CENTER)
+
+        for movie in recommended_movie:
+            title, year, rating, genres = movie
+            tree.insert("", "end", values=(title, year, round(rating, 2), genres))
+
+        tree.pack()
+
+        def _return() -> None:
+            movie_reco.destroy()
+            menu()
+
+        tree.bind("<ButtonRelease-1>", on_row_selected)
+
+        back = Button(movie_reco, text="Back", fg="black", highlightbackground="grey", width=10,
+                      height=2, command=_return)
+        back.place(relx=0.08, rely=0.08, anchor="center")
+
     def reco_destroy() -> None:
         reco_screen.destroy()
 
@@ -386,10 +436,10 @@ def create_window(dataset_path: str) -> None:
         - len(row) > 3
         """
         with open("watched_movies.txt", "a") as file:
-            file.write(f"{_id},{row[0]}\n")
+            file.write(f"{_id},\"{row[0]}\"\n")
         file.close()
 
-    def get_watched_movies() -> list[tuple[str, int, float, set[str]]]:
+    def get_watched_movies() -> list[str]:
         """
         Gather a list of all movies watched by the user with _id
 
@@ -400,10 +450,10 @@ def create_window(dataset_path: str) -> None:
 
         movies = []
         with open("watched_movies.txt", "r") as file:
-            for line in file:
-                userid = line.strip().split(",")
-                if userid[0] == _id:
-                    movies.append(f"{userid[1]}")
+            reader = csv.reader(file)
+            for line in reader:
+                if line[0] == _id:
+                    movies.append(f"{line[1]}")
         return movies
 
     def watched_movies() -> None:

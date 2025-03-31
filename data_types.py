@@ -54,6 +54,9 @@ class _Movie(_Vertex):
         """
         tot_rating = 0
 
+        if len(self.reviews) == 0:
+            return 0
+
         for review in self.reviews:
             tot_rating += review.rating
 
@@ -81,11 +84,15 @@ class _Movie(_Vertex):
         # A vertex has a similarity score of 0 to itself
         if self is other_movie:
             return 0
+        
+        # Get users that have reviewed the movies
+        self_reviewers = {review.user for review in self.reviews}
+        other_reviewers = {review.user for review in other_movie.reviews}
 
         # Create a set holding the verticies' shared neighbours
-        shared_reviews = self.reviews.intersection(other_movie.reviews)
+        shared_reviews = self_reviewers.intersection(other_reviewers)
         # Create a set holding the verticies' non-shared neighbours
-        unique_reviews = self.reviews.union(other_movie.reviews)
+        unique_reviews = self_reviewers.union(other_reviewers)
         # Return the number of shared neighbours / number of unique neighbours
         return len(shared_reviews) / len(unique_reviews)
 
@@ -278,7 +285,7 @@ class ReviewGraph:
 
         return total_score / num_movies
 
-    def recommend_by_similarity(self, movies: set[str], max_recommendations: int, min_rating: float = 3.5) -> list[str]:
+    def recommend_by_similarity(self, movies: set[str], max_recommendations: int, min_rating: float = 3.75) -> list[str]:
         """Return a list of length num_reccomendations containing the titles of recommended movies.
         Movies are recommended based on the given movies. Only movies with the given minimum rating are considered.
 
@@ -287,9 +294,11 @@ class ReviewGraph:
         """
         all_movies = self.get_movies()
 
+        avg_movie_rating = self._avg_movie_rating()
+
         # Only look for movies with a weighted rating of at least min_rating
         movies_to_compare = [movie for movie in all_movies if
-                             self._vertices[movie].bayesian_weighted_score(self._avg_movie_rating(), 50) > min_rating]
+                             self._vertices[movie].bayesian_weighted_score(avg_movie_rating, 50) > min_rating]
 
         similarity = self._calculate_similarities(movies, movies_to_compare)
 
@@ -297,7 +306,7 @@ class ReviewGraph:
         recommendations.sort(key=lambda movie: similarity[movie])
 
         if len(recommendations) > max_recommendations:
-            return recommendations[len(recommendations) - max_recommendations]
+            return recommendations[len(recommendations) - max_recommendations:]
         else:
             return recommendations
 
